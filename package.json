@@ -24,6 +24,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tsdx watch",
+    "prepare": "npm run build",
     "build": "tsdx build",
     "lint": "tsdx lint",
     "lint:fix": "tsdx lint src --fix"
