@@ -5,7 +5,14 @@ import stringRenderer from './stringRenderer';
 import reactRenderer from './reactRenderer';
 import reactImageRenderer from './reactImageRenderer';
 import {Ast, Config} from '../types';
-import {deepClone, chunkStr, isUndefined, symbolFromDef, symbolFromPhoneme, partParents} from './lib';
+import {
+  deepClone,
+  chunkStr,
+  isUndefined,
+  symbolFromDef,
+  symbolFromPhoneme,
+  partParents,
+} from './lib';
 import symbolDefs from './symbolDefs.json';
 import parts from './parts.json';
 
@@ -40,7 +47,12 @@ const TILEMAP = {
 // class ConfigError extends Error {}
 
 // apply color preference
-const paint = (node: Ast, colors: [string, string], strokeWidth: string, autoScaleStrokes: boolean = false): Ast => {
+const paint = (
+  node: Ast,
+  colors: [string, string],
+  strokeWidth: string,
+  autoScaleStrokes: boolean = false
+): Ast => {
   const fillIndex = node.attributes.fill === COLOR_CODES.FG ? FG : BG;
   const strokeIndex = node.attributes.stroke === COLOR_CODES.FG ? FG : BG;
 
@@ -59,10 +71,10 @@ const paint = (node: Ast, colors: [string, string], strokeWidth: string, autoSca
   }
 
   return {
+    ...node,
     name: node.name,
     attributes: node.attributes,
     children: node.children.map(n => paint(n, colors, strokeWidth, autoScaleStrokes)),
-    ...node,
   };
 };
 
@@ -101,7 +113,7 @@ const sigil = (props: Config) => {
     patpDidPass,
     `@tlon/sigil-js  needs a valid patp (point name). Patp field is invalid. Recieved ${props.patp}`
   );
-  
+
   return sigilFromSymbols(symbols, props);
 };
 
@@ -304,8 +316,14 @@ const sigilFromSymbols = (symbols: any[], props: Config) => {
 };
 
 export {
-  sigil, sigilFromSymbols,
-  stringRenderer, reactRenderer, reactImageRenderer,
-  symbolDefs, parts, partParents,
-  symbolFromDef, symbolFromPhoneme,
+  sigil,
+  sigilFromSymbols,
+  stringRenderer,
+  reactRenderer,
+  reactImageRenderer,
+  symbolDefs,
+  parts,
+  partParents,
+  symbolFromDef,
+  symbolFromPhoneme,
 };

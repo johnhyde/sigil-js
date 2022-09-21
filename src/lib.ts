@@ -1,6 +1,6 @@
 import symbolDefs from './symbolDefs.json';
 import parts from './parts.json';
-import { Ast } from '../types';
+import {Ast} from '../types';
 
 const deepClone = (v: any) => JSON.parse(JSON.stringify(v));
 
@@ -20,16 +20,19 @@ const isUndefined = (v: any) => typeof v === 'undefined';
 
 const symbolFromDef = (symbolDef: string[]): Ast => {
   const badParts: string[] = [];
-  const symbolParts = symbolDef.map((partKey) => {
-    // @ts-ignore
-    const part = parts[partKey];
-    if (!part) {
-      badParts.push(partKey);
-    } else {
-      part.attributes['part-key'] = partKey;
+  const symbolParts = symbolDef
+    .map(partKey => {
+      // @ts-ignore
+      const part = parts[partKey];
+      if (!part) {
+        badParts.push(partKey);
+        return undefined;
+      } else {
+        part.attributes['part-key'] = partKey;
+      }
       return part;
-    }
-  });
+    })
+    .filter(part => part);
 
   if (badParts.length > 0) {
     throw new Error(`Symbol def included invalid part keys: ${badParts.join(', ')}`);
@@ -37,23 +40,22 @@ const symbolFromDef = (symbolDef: string[]): Ast => {
 
   return {
     children: symbolParts,
-    name: "g",
+    name: 'g',
     attributes: {
-      fill: "none",
+      fill: 'none',
     },
   };
-}
+};
 
-const symbolFromPhoneme = (phoneme: string): (Ast | undefined) => {
+const symbolFromPhoneme = (phoneme: string): Ast | undefined => {
   // @ts-ignore
   const symbolDef = symbolDefs[phoneme];
-  if (isUndefined(symbolDef))
-    return undefined;
+  if (isUndefined(symbolDef)) return undefined;
   return symbolFromDef(symbolDef);
-}
+};
 
 function calculatePartParents() {
-  const parents: { [partId: string]: string[] } = {};
+  const parents: {[partId: string]: string[]} = {};
   Object.entries(symbolDefs).forEach(([key, value]) => {
     value.forEach(partId => {
       if (!parents[partId]) parents[partId] = [];
@@ -66,9 +68,4 @@ function calculatePartParents() {
 
 const partParents = calculatePartParents();
 
-export {
-  deepClone, chunkStr, compose, isUndefined,
-  symbolFromDef,
-  symbolFromPhoneme,
-  partParents,
-};
+export {deepClone, chunkStr, compose, isUndefined, symbolFromDef, symbolFromPhoneme, partParents};
