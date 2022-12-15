@@ -25,6 +25,34 @@ const COLOR_CODES = {
 };
 
 const UNIT_GRIDS = {
+  16: [
+    {x: 0, y: 0},
+    {x: 128, y: 0},
+    {x: 256, y: 0},
+    {x: 384, y: 0},
+    {x: 0, y: 128},
+    {x: 128, y: 128},
+    {x: 256, y: 128},
+    {x: 384, y: 128},
+    {x: 0, y: 256},
+    {x: 128, y: 256},
+    {x: 256, y: 256},
+    {x: 384, y: 256},
+    {x: 0, y: 384},
+    {x: 128, y: 384},
+    {x: 256, y: 384},
+    {x: 384, y: 384},
+  ],
+  8: [
+    {x: 0, y: 0},
+    {x: 384, y: 0},
+    {x: 0, y: 384},
+    {x: 384, y: 384},
+    {x: 128, y: 128},
+    {x: 256, y: 128},
+    {x: 128, y: 256},
+    {x: 256, y: 256},
+  ],
   4: [
     {x: 0, y: 0},
     {x: 128, y: 0},
@@ -39,6 +67,8 @@ const UNIT_GRIDS = {
 };
 
 const TILEMAP = {
+  16: {x: 4, y: 4},
+  8: {x: 4, y: 4},
   4: {x: 2, y: 2},
   2: {x: 2, y: 1},
   1: {x: 1, y: 1},
@@ -78,6 +108,25 @@ const paint = (
   };
 };
 
+function getTier(symbols: Array<any>): 16 | 8 | 4 | 2 | 1 {
+  return symbols.length >= 10
+    ? 16
+    : symbols.length >= 6
+    ? 8
+    : symbols.length === 4
+    ? 4
+    : symbols.length === 2
+    ? 2
+    : 1;
+}
+
+function padPhonemes(phonemes: string[]): string[] {
+  const tier = getTier(phonemes);
+  const numDozzods = (tier - phonemes.length) / 2;
+  const dozzods = new Array(numDozzods).fill(['doz', 'zod']).flat();
+  return dozzods.concat(phonemes);
+}
+
 const sigil = (props: Config) => {
   props = {...props};
 
@@ -86,14 +135,15 @@ const sigil = (props: Config) => {
 
   invariant(Array.isArray(phonemes), `Invalid patp argument`);
 
-  // Throw an error if the phoneme length is not a 32, 16 or 8 bit point.
-  const phonemeLengthDidPass =
-    phonemes.length === 1 || phonemes.length === 2 || phonemes.length === 4;
+  // Throw an error if the phoneme length is not a 128, 64, 32, 16 or 8 bit point.
+  const phonemeLengthDidPass = phonemes.length === 1 || phonemes.length % 2 === 0;
 
   invariant(
     phonemeLengthDidPass,
-    `@tlon/sigil-js cannot render @p of length ${phonemes.length}. Only lengths of 1 (galaxy), 2 (star), and 4 (planet) are supported at this time.`
+    `@tlon/sigil-js cannot render @p of length ${phonemes.length}. Only valid @ps are supported.`
   );
+
+  phonemes = padPhonemes(phonemes);
 
   // get symbols and clone them. If no symbol is found, the @p prop was invalid.
   let patpDidPass;
@@ -167,9 +217,9 @@ const sigilFromSymbols = (symbols: any[], props: Config) => {
     });
   }
 
-  const tier = symbols.length === 4 ? 4 : symbols.length === 2 ? 2 : 1;
+  const tier = getTier(symbols);
 
-  // get a grid according to the point's tier (planet, start, galaxy)
+  // get a grid according to the point's tier (comet, moon, planet, start, galaxy)
   const grid = UNIT_GRIDS[tier];
 
   // Move each symbol into it's new x/y position on a unit rectangle sized 256 by 256.
@@ -193,7 +243,7 @@ const sigilFromSymbols = (symbols: any[], props: Config) => {
       // If this symbol will be drawn without a margin
       resizeRatio = 1;
     }
-  } else {
+  } else if (tier < 8) {
     // If the sigils is 2 symbols wide
     if (props.margin === true) {
       // If this symbol will be drawn with a margin
@@ -201,6 +251,15 @@ const sigilFromSymbols = (symbols: any[], props: Config) => {
     } else {
       // If this symbol will be drawn without a margin
       resizeRatio = 0.5;
+    }
+  } else {
+    // If the sigils is 4 symbols wide
+    if (props.margin === true) {
+      // If this symbol will be drawn with a margin
+      resizeRatio = 0.25 * 0.8;
+    } else {
+      // If this symbol will be drawn without a margin
+      resizeRatio = 0.25;
     }
   }
 
